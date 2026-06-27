@@ -100,18 +100,27 @@ The following switches are exposed to Home Assistant:
 
 ---
 
-## Finding Your Remote IDs
+## Finding Your Orcon & Remote IDs
 
-To discover the RF IDs of your existing Orcon remotes:
+You must provide the ESP32 with the correct Orcon Destination ID (`destID`) so the ventilation unit accepts its commands. How you find this depends on your current setup:
 
+### Scenario A: You have a physical RF remote (Sniffing method)
+If you already have a wireless Orcon RF remote, the ESP32 can sniff the ID directly from the air:
 1. In `itho.yaml`, uncomment the verbose logging line:
    ```yaml
    logger:
      level: VERBOSE
    ```
-2. Flash and monitor the logs.
-3. Press buttons on your physical Orcon remote.
-4. The logs will show the device ID strings — add these to the `Idlist[]` array in the `on_boot` lambda.
+2. Flash the ESP32 and open the Logs viewer.
+3. Press any button on your physical Orcon remote.
+4. The logs will output: `Intercepted RF Packet from ID: XX,YY,ZZ`.
+5. Enter those three numbers into `orcon_dest_id` in your `substitutions:` block! (You can also add it to `remote1_id` to sync state changes).
+
+### Scenario B: You only have a hardwired wall switch
+If you do not have an RF remote, there is nothing to sniff. You **must** physically locate the Orcon's factory RF ID sticker.
+- The ID is a 6-character hex code (e.g., `76 24 94` or `5AB499`).
+- Look for a small white sticker. It is often located on the **underside/back** of the green circuit board inside the unit (requires unscrewing the board), on the outside plastic casing near the cables, or in the original installation manual.
+- Once found, convert the 3 hex pairs to decimal (e.g., `76 24 94` hex -> `118 36 148` decimal) and enter them into your `substitutions:` block.
 
 ---
 
