@@ -67,13 +67,13 @@ esp32:
     type: arduino
 
 wifi:
-  ssid: <YOURSSID>
-  password: <YOURPASSWORD>
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "FALLBACK AP"
-    password: "jdsh348201"
+    ssid: Orcon ESP32 Fallback Hotspot
+    password: !secret ap_password
 
 captive_portal:
 
@@ -83,9 +83,12 @@ logger:
 
 # Enable Home Assistant API
 api:
+  encryption:
+    key: !secret encryption_key
 
 ota:
-
+  platform: esphome
+  password: !secret ota_password
 interval:
   - interval: 1s
     then:
