@@ -1,0 +1,138 @@
+esphome:
+  name: fancontrol
+  includes: 
+    - itho-lib/CC1101.h
+    - itho-lib/CC1101.cpp
+    - itho-lib/CC1101Packet.h
+    - itho-lib/IthoCC1101.h
+    - itho-lib/IthoCC1101.cpp
+    - itho-lib/IthoPacket.h
+    - itho.h
+  libraries: 
+    - "SPI"
+
+  on_boot:
+    then:
+      - lambda: |-
+          Idlist[0]={"51,40,61","Badkamer"};
+          Idlist[1]={"73,82,11","Toilet"};
+          Idlist[2]={"ID3","ID3"};
+          // Arbitrary integers between 1-254 for ESP32's ID
+          srcID[0] = 11;
+          srcID[1] = 22;
+          srcID[2] = 33;
+          // CLEARLY MARKED: Edit these below to match your destination Orcon Ventilation System ID
+          destID[0] = 118;
+          destID[1] = 36;
+          destID[2] = 148;
+          Mydeviceid="Homeassistant"; 
+          setup_itho();
+
+  on_loop:
+    - lambda: |-
+        loop_itho();
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+wifi:
+  ssid: <YOURSSID>
+  password: <YOURPASSWORD>
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "FALLBACK AP"
+    password: "jdsh348201"
+
+captive_portal:
+
+# Enable logging
+logger:
+#  level: VERBOSE #Enable this line to find out the ID of youre remote
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          update_itho(id(itho_fanspeed), id(itho_fantimer), id(itho_lastid));
+
+switch:
+  - platform: template
+    name: "FanSendStandby"
+    id: fansendstandby
+    turn_on_action:
+      - lambda: |-
+          rf->sendCommand(OrconStandBy, srcID, destID);
+          State = 100;
+          Timer = 0;
+          LastID = Mydeviceid;
+          rf->initReceive();
+          id(fansendstandby).publish_state(false);
+
+  - platform: template
+    name: "FanSendLow"
+    id: fansendlow
+    turn_on_action:
+      - lambda: |-
+          rf->sendCommand(OrconLow, srcID, destID);
+          State = 101;
+          Timer = 0;
+          LastID = Mydeviceid;
+          rf->initReceive();
+          id(fansendlow).publish_state(false);
+
+  - platform: template
+    name: "FanSendMedium"
+    id: fansendmedium
+    turn_on_action:
+      - lambda: |-
+          rf->sendCommand(OrconMedium, srcID, destID);
+          State = 102;
+          Timer = 0;
+          LastID = Mydeviceid;
+          rf->initReceive();
+          id(fansendmedium).publish_state(false);
+
+  - platform: template
+    name: "FanSendHigh"
+    id: fansendhigh
+    turn_on_action:
+      - lambda: |-
+          rf->sendCommand(OrconHigh, srcID, destID);
+          State = 103;
+          Timer = 0;
+          LastID = Mydeviceid;
+          rf->initReceive();
+          id(fansendhigh).publish_state(false);
+
+  - platform: template
+    name: "FanSendAuto"
+    id: fansendauto
+    turn_on_action:
+      - lambda: |-
+          rf->sendCommand(OrconAuto, srcID, destID);
+          State = 104;
+          Timer = 0;
+          LastID = Mydeviceid;
+          rf->initReceive();
+          id(fansendauto).publish_state(false);
+
+text_sensor:
+  - platform: template
+    name: "fanspeed"
+    id: itho_fanspeed
+    icon: "mdi:transfer"
+  - platform: template
+    name: "fantimer"
+    id: itho_fantimer
+    icon: "mdi:timer"
+  - platform: template
+    name: "lastid"
+    id: itho_lastid
