@@ -54,19 +54,17 @@ ESPHome custom component for controlling an **Orcon MVS-15RH** (or compatible It
 
 2. **Configure your IDs in `itho.yaml`:**
 
-   In the `on_boot` lambda block, update the following values:
+   Open `itho.yaml` and look for the `substitutions:` block at the very top. Update the variables to match your setup:
 
    ```yaml
-   # Your ESP32's source ID (arbitrary integers 1-254, must be unique on your RF network)
-   srcID[0] = 11;
-   srcID[1] = 22;
-   srcID[2] = 33;
-
-   # Your Orcon unit's destination ID (found on the sticker inside the Orcon box)
-   # Convert the hex bytes to decimal
-   destID[0] = 118;
-   destID[1] = 36;
-   destID[2] = 148;
+   substitutions:
+     # Your Orcon Unit ID (from the green module sticker, hex to decimal)
+     orcon_dest_id_0: "118"
+     orcon_dest_id_1: "36"
+     orcon_dest_id_2: "148"
+     
+     # Your physical remote ID (sniffed from ESPHome logs)
+     remote1_id: '"11,22,33"'
    ```
 
 3. **Configure WiFi in `itho.yaml`:**

@@ -1,5 +1,6 @@
 #include "esphome.h"
 #include "IthoCC1101.h"
+#include "esp_task_wdt.h"
 
 
 //List of States:
@@ -98,6 +99,11 @@ String TextSensorfromState(int currentState)
 
 
 void setup_itho() {
+    // ESP32: The CC1101 initialization involves multiple blocking SPI transfers
+    // and calibration wait loops that can exceed the 5-second task watchdog timeout.
+    // Temporarily remove this task from watchdog monitoring during init.
+    esp_task_wdt_delete(NULL);
+
     rf = new IthoCC1101(5, 19);
     rf->enableOrcon(true);
     rf->init();
@@ -106,6 +112,9 @@ void setup_itho() {
     attachInterrupt(digitalPinToInterrupt(2), ITHOinterrupt, FALLING);
     rf->initReceive();
     InitRunned = true;
+
+    // Re-add this task to watchdog monitoring now that init is complete
+    esp_task_wdt_add(NULL);
 }
 
 void loop_itho() {
@@ -163,6 +172,10 @@ void ITHOcheck() {
   if (rf->checkForNewPacket()) {
     IthoCommand cmd = rf->getLastCommand();
 	String Id = rf->getLastIDstr();
+	
+	// Print every received ID to the logs so the user can discover their remote!
+	ESP_LOGI("custom", "Intercepted RF Packet from ID: %s", Id.c_str());
+	
 	int index = RFRemoteIndex(Id);
 	if ( index>=0) { // Only accept commands that are in the list
 		switch (cmd) {

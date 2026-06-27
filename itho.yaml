@@ -1,3 +1,31 @@
+substitutions:
+  # -------------------------------------------------------------
+  # MANDATORY ORCON SETUP
+  # -------------------------------------------------------------
+  
+  # Your Orcon Unit's ID (Found on the green sticker inside the Orcon box)
+  # Convert the 3 hex bytes to decimal. 
+  # Example: 76 24 94 hex -> 118, 36, 148 dec
+  orcon_dest_id_0: "118"
+  orcon_dest_id_1: "36"
+  orcon_dest_id_2: "148"
+
+  # Your ESP32's unique Remote ID. 
+  # This can be any arbitrary integers (1-254) as long as it's unique on your network.
+  esp32_source_id_0: "11"
+  esp32_source_id_1: "22"
+  esp32_source_id_2: "33"
+
+  # -------------------------------------------------------------
+  # OPTIONAL: KNOWN REMOTES
+  # -------------------------------------------------------------
+  
+  # To sync Home Assistant's state when you use your physical Orcon remote,
+  # you must register its ID here. Check the ESPHome logs when pressing a button
+  # on your physical remote to see its ID intercepted.
+  remote1_id: '"11,22,33"'
+  remote1_name: '"Physical Remote"'
+
 esphome:
   name: fancontrol
   includes: 
@@ -8,23 +36,24 @@ esphome:
     - itho-lib/IthoCC1101.cpp
     - itho-lib/IthoPacket.h
     - itho.h
-  libraries: 
-    - "SPI"
+  platformio_options:
+    lib_deps:
+      - "SPI"
 
   on_boot:
     then:
       - lambda: |-
-          Idlist[0]={"51,40,61","Badkamer"};
-          Idlist[1]={"73,82,11","Toilet"};
-          Idlist[2]={"ID3","ID3"};
+          Idlist[0]={${remote1_id}, ${remote1_name}};
+          Idlist[1]={"",""};
+          Idlist[2]={"",""};
           // Arbitrary integers between 1-254 for ESP32's ID
-          srcID[0] = 11;
-          srcID[1] = 22;
-          srcID[2] = 33;
+          srcID[0] = ${esp32_source_id_0};
+          srcID[1] = ${esp32_source_id_1};
+          srcID[2] = ${esp32_source_id_2};
           // CLEARLY MARKED: Edit these below to match your destination Orcon Ventilation System ID
-          destID[0] = 118;
-          destID[1] = 36;
-          destID[2] = 148;
+          destID[0] = ${orcon_dest_id_0};
+          destID[1] = ${orcon_dest_id_1};
+          destID[2] = ${orcon_dest_id_2};
           Mydeviceid="Homeassistant"; 
           setup_itho();
 

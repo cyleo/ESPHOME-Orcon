@@ -196,7 +196,7 @@ void IthoCC1101::initReceive()
 
   while ((readRegisterWithSyncProblem(CC1101_MARCSTATE, CC1101_STATUS_REGISTER)) != CC1101_MARCSTATE_IDLE &&
          millis() < maxWait) {
-    yield();
+    delay(1); // ESP32: feed the FreeRTOS task watchdog
   }
 
   writeRegister(CC1101_FSCAL2,   0x00);
@@ -246,7 +246,7 @@ void IthoCC1101::initReceive()
 
   while ((readRegisterWithSyncProblem(CC1101_MARCSTATE, CC1101_STATUS_REGISTER)) != CC1101_MARCSTATE_IDLE &&
          millis() < maxWait) {
-    yield();
+    delay(1); // ESP32: feed the FreeRTOS task watchdog
   }
 
   writeRegister(CC1101_MCSM0, 0x18); // no auto calibrate
@@ -264,7 +264,7 @@ void IthoCC1101::initReceive()
 
   while ((readRegisterWithSyncProblem(CC1101_MARCSTATE, CC1101_STATUS_REGISTER)) != CC1101_MARCSTATE_RX &&
          millis() < maxWait) {
-    yield();
+    delay(1); // ESP32: feed the FreeRTOS task watchdog
   }
 
   initReceiveMessage();
@@ -303,6 +303,7 @@ void IthoCC1101::initReceiveMessage()
     if (marcState == CC1101_MARCSTATE_RXFIFO_OVERFLOW) { // RX_OVERFLOW
       writeCommand(CC1101_SFRX);                         // flush RX buffer
     }
+    delay(1); // ESP32: feed the FreeRTOS task watchdog
   }
 }
 

@@ -31,7 +31,7 @@ void CC1101::spi_waitMiso()
   uint32_t maxWait = millis() + ITHO_MAX_WAIT; // Wait for max. x seconds
 
   while (digitalRead(_MISOpin) == HIGH && millis() < maxWait) {
-    yield();
+    delay(1); // ESP32: delay(1) yields to FreeRTOS and resets the task watchdog
   }
 }
 
@@ -128,12 +128,14 @@ uint8_t /* ICACHE_RAM_ATTR */ CC1101::readRegisterWithSyncProblem(uint8_t addres
   value1 = readRegister(address | registerType);
 
   // if two consecutive reads gives us the same result then we know we are ok
+  uint32_t maxWait = millis() + ITHO_MAX_WAIT; // ESP32: prevent infinite loop if CC1101 returns unstable data
   do
   {
     value2 = value1;
     value1 = readRegister(address | registerType);
+    delay(1); // ESP32: feed the FreeRTOS task watchdog
   }
-  while (value1 != value2);
+  while (value1 != value2 && millis() < maxWait);
 
   return value1;
 }
