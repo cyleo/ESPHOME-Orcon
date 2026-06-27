@@ -120,7 +120,9 @@ uint8_t CC1101::readRegisterMedian3(uint8_t address)
    FREQEST or RSSI while the receiver is active, MARCSTATE at any time other than an IDLE radio state,
    RXBYTES when receiving or TXBYTES when transmitting, and WORTIME1/WORTIME0 at any time.*/
 
-// uint8_t CC1101::readRegisterWithSyncProblem(uint8_t address, uint8_t registerType)
+#include <esp_task_wdt.h>
+
+// registerType = CC1101_CONFIG_REGISTER or CC1101_STATUS_REGISTER
 uint8_t /* ICACHE_RAM_ATTR */ CC1101::readRegisterWithSyncProblem(uint8_t address, uint8_t registerType)
 {
   uint8_t value1, value2;
@@ -133,7 +135,8 @@ uint8_t /* ICACHE_RAM_ATTR */ CC1101::readRegisterWithSyncProblem(uint8_t addres
   {
     value2 = value1;
     value1 = readRegister(address | registerType);
-    delay(1); // ESP32: feed the FreeRTOS task watchdog
+    esp_task_wdt_reset(); // Feed the ESPHome task watchdog
+    delay(1);
   }
   while (value1 != value2 && millis() < maxWait);
 

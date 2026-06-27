@@ -20,6 +20,7 @@
 #include <string.h>
 #include <Arduino.h>
 #include <SPI.h>
+#include <esp_task_wdt.h>
 
 // #define CRC_FILTER
 
@@ -196,6 +197,7 @@ void IthoCC1101::initReceive()
 
   while ((readRegisterWithSyncProblem(CC1101_MARCSTATE, CC1101_STATUS_REGISTER)) != CC1101_MARCSTATE_IDLE &&
          millis() < maxWait) {
+    esp_task_wdt_reset();
     delay(1); // ESP32: feed the FreeRTOS task watchdog
   }
 
@@ -246,6 +248,7 @@ void IthoCC1101::initReceive()
 
   while ((readRegisterWithSyncProblem(CC1101_MARCSTATE, CC1101_STATUS_REGISTER)) != CC1101_MARCSTATE_IDLE &&
          millis() < maxWait) {
+    esp_task_wdt_reset();
     delay(1); // ESP32: feed the FreeRTOS task watchdog
   }
 
@@ -303,6 +306,7 @@ void IthoCC1101::initReceiveMessage()
     if (marcState == CC1101_MARCSTATE_RXFIFO_OVERFLOW) { // RX_OVERFLOW
       writeCommand(CC1101_SFRX);                         // flush RX buffer
     }
+    esp_task_wdt_reset();
     delay(1); // ESP32: feed the FreeRTOS task watchdog
   }
 }
